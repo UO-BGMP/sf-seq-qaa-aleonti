@@ -1,0 +1,35 @@
+#!/bin/bash
+#SBATCH --partition=long                               
+#SBATCH --job-name=qdist_SFs	                  
+#SBATCH --output=out.qd              
+#SBATCH --error=err.qd                 
+#SBATCH --time=24:00:00                           
+#SBATCH --nodes=1                                       
+#SBATCH --ntasks-per-node=28                   
+
+ml prl
+ml python3
+
+######### file 1 #################################################
+
+python3 /home/aleonti/indexhopping/scripts/qdist.py \
+-f /home/aleonti/bi624/fastq_files/1_2A_control_S1_L008_R1_001.fastq \
+-n 101 \
+-o /home/aleonti/bi624/ih_ouput/1_2A_control_R1_qdist.tsv
+
+python3 /home/aleonti/indexhopping/scripts/qdist.py \
+-f /home/aleonti/bi624/fastq_files/1_2A_control_S1_L008_R2_001.fastq \
+-n 101 \
+-o /home/aleonti/bi624/ih_ouput/1_2A_control_R2_qdist.tsv
+
+######### file 2 #################################################
+
+python3 /home/aleonti/indexhopping/scripts/qdist.py \
+-f /home/aleonti/bi624/fastq_files/21_3G_both_S15_L008_R1_001.fastq \
+-n 101 \
+-o /home/aleonti/bi624/ih_ouput/21_3G_both_R1_qdist.tsv
+
+python3 /home/aleonti/indexhopping/scripts/qdist.py \
+-f /home/aleonti/bi624/fastq_files/21_3G_both_S15_L008_R2_001.fastq \
+-n 101 \
+-o /home/aleonti/bi624/ih_ouput/21_3G_both_R2_qdist.tsv

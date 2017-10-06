@@ -1,0 +1,30 @@
+#!/bin/bash
+#SBATCH --partition=gpu        
+#SBATCH --job-name=gsnap_mus     
+#SBATCH --output=out.gs         ### File in which to store job output
+#SBATCH --error=err.gs          ### File in which to store job error messages
+#SBATCH --time=12:00:00       ### Wall clock time limit in Days-HH:MM:SS
+#SBATCH --nodes=1               ### Node count required for the job
+#SBATCH --ntasks-per-node=28     ### Number of tasks to be launched per Node
+
+ml easybuild
+module load intel/2017a GMAP-GSNAP
+
+######################## gmap build to create gsnap database #######################################
+
+# d flag indicates what you want your database directory to be named, D indicates the path to that directory,
+# and then, with NO flag at the end, you put the name of your fasta files
+
+# gmap_build -d gmap_db -D /home/aleonti/bi624/rRNA_files/gsnap_gmap/gmap_db /home/aleonti/bi624/rRNA_files/isolated_mouse_rRNA/* 
+
+
+
+######################## gsnap run to align trimmed fastq files to the rRNA ########################
+
+gsnap -N 1 -t 26 -A sam --split-output gsnap_1_2A_control --allow-pe-name-mismatch --no-sam-headers \
+-d gmap_db -D /home/aleonti/bi624/rRNA_files/gsnap_gmap/gmap_db/gmap_db \
+/home/aleonti/bi624/cutadapt_output/trimmed_1_2A_control_R1.fastq /home/aleonti/bi624/cutadapt_output/trimmed_1_2A_control_R2.fastq
+
+gsnap -N 1 -t 26 -A sam --split-output gsnap_21_3G_both --allow-pe-name-mismatch --no-sam-headers \
+-d gmap_db -D /home/aleonti/bi624/rRNA_files/gsnap_gmap/gmap_db/gmap_db \
+/home/aleonti/bi624/cutadapt_output/trimmed_21_3G_both_R1.fastq /home/aleonti/bi624/cutadapt_output/trimmed_21_3G_both_R2.fastq

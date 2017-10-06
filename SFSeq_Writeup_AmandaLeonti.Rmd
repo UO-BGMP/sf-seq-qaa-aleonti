@@ -1,0 +1,399 @@
+---
+title: "SF-Seq Assignment - Bi624"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir =  normalizePath("/Users/amanda/Bi624/SFSeq_Assignment"))
+knitr::opts_chunk$set(tidy=TRUE)
+```
+
+## SF-Seq read quality score distributions for Part 1 --------------------------------
+
+### 1. Using FastQC on Talapas, produce plots of quality score distributions for forward and reverse reads. Also, produce plots of the per-base N content, and comment on whether or not they are consistent with the quality score plots.
+
+**Setup in git: **
+
+To create my own working directory for this repository:
+
+`git clone https://github.com/UO-BGMP/sf-seq-qaa-aleonti.git`  
+`git checkout -b working`
+
+**Running fastqc on the command line: **
+
+For this assignment, I'm analyzing the data for the following libraries:
+
+- **1_2A_control**  
+- **21_3G_both **
+
+Command used to run fastqc:
+
+```{.r}
+fastqc -o fastqc_output --noextract 1_2A_control_S1_L008_R1_001.fastq.gz
+1_2A_control_S1_L008_R2_001.fastq.gz 21_3G_both_S15_L008_R1_001.fastq.gz
+21_3G_both_S15_L008_R2_001.fastq.gz
+```
+
+I used the `--noextract` option, and the `-o` option to specify an output file. 
+
+FastQC generated a zipped directory containing the following plots, displaying the per-base quality distribution and N-content distribution for each read.
+
+**1_2A_control: **
+
+
+![Per Base Quality for 1_2A_control_S1_L008_R1_001](/Users/amanda/Bi624/SFSeq_Assignment/fastQC_files_from_talapas/1_2A_control_S1_L008_R1_001_fastqc/Images/per_base_quality.png)
+
+
+![Per Base N Content for 1_2A_control_S1_L008_R1_001](/Users/amanda/Bi624/SFSeq_Assignment/fastQC_files_from_talapas/1_2A_control_S1_L008_R1_001_fastqc/Images/per_base_n_content.png)
+
+
+![Per Base Quality for 1_2A_control_S1_L008_R2_001](/Users/amanda/Bi624/SFSeq_Assignment/fastQC_files_from_talapas/1_2A_control_S1_L008_R2_001_fastqc/Images/per_base_quality.png)
+
+![Per Base N Content for 1_2A_control_S1_L008_R2_001](/Users/amanda/Bi624/SFSeq_Assignment/fastQC_files_from_talapas/1_2A_control_S1_L008_R2_001_fastqc/Images/per_base_n_content.png)
+
+**21_3G_both: **
+
+![Per Base Quality for 21_3G_both_S15_L008_R1_001](/Users/amanda/Bi624/SFSeq_Assignment/fastQC_files_from_talapas/21_3G_both_S15_L008_R1_001_fastqc/Images/per_base_quality.png)
+
+
+![Per Base N Content for 21_3G_both_S15_L008_R1_001](/Users/amanda/Bi624/SFSeq_Assignment/fastQC_files_from_talapas/21_3G_both_S15_L008_R1_001_fastqc/Images/per_base_n_content.png)
+
+
+![Per Base Quality for 21_3G_both_S15_L008_R1_001](/Users/amanda/Bi624/SFSeq_Assignment/fastQC_files_from_talapas/21_3G_both_S15_L008_R2_001_fastqc/Images/per_base_quality.png)
+
+
+![Per Base N Content for 21_3G_both_S15_L008_R2_001](/Users/amanda/Bi624/SFSeq_Assignment/fastQC_files_from_talapas/21_3G_both_S15_L008_R2_001_fastqc/Images/per_base_n_content.png) 
+
+The data for both reads from each of the 2 files is very high quality, as evidenced by the average Q-Scores for each position in the reads. The averages for all files are above 28, with many positions across all the files having an average Q-Score of 40. Because the Q-Scores for each position are so high, it seems reasonable that the per-base N content values would be very low - in this case, it's near 0 for each position in all 4 files. Base calls of N occur when the call is "uncertain", or low-enough quality that an actual nucleotide could not be determined. Because the calls for this run were high quality, the occurance of Ns in the final sequence data is very low. The N-occurances are a bit higher at the start of the read, which also aligns with the pattern seen in Q-Scores at the beginning of the read as well. 
+
+### 2. Run your quality score plotting script from the index hopping assignment. Describe how the ```FastQC``` quality score distribution plots compare to your own. If different, propose an explanation. Also, does the runtime differ? If so, why?
+
+**To run my index hopping scripts on the files: **
+
+I submitted a batch request via SLURM to run this script on all 4 files assigned to me. Here's the code from that request:
+
+```{.r}
+#!/bin/bash
+#SBATCH --partition=long                               
+#SBATCH --job-name=qdist_SFs	                  
+#SBATCH --output=out.qd              
+#SBATCH --error=err.qd                 
+#SBATCH --time=24:00:00                           
+#SBATCH --nodes=1                                       
+#SBATCH --ntasks-per-node=28                   
+
+ml prl
+ml python3
+
+######### file 1 #################################################
+
+python3 /home/aleonti/indexhopping/scripts/qdist.py \
+-f /home/aleonti/bi624/fastq_files/1_2A_control_S1_L008_R1_001.fastq \
+-n 101 \
+-o /home/aleonti/bi624/ih_ouput/1_2A_control_R1_qdist.tsv
+
+python3 /home/aleonti/indexhopping/scripts/qdist.py \
+-f /home/aleonti/bi624/fastq_files/1_2A_control_S1_L008_R2_001.fastq \
+-n 101 \
+-o /home/aleonti/bi624/ih_ouput/1_2A_control_R2_qdist.tsv
+
+######### file 2 #################################################
+
+python3 /home/aleonti/indexhopping/scripts/qdist.py \
+-f /home/aleonti/bi624/fastq_files/21_3G_both_S15_L008_R1_001.fastq \
+-n 101 \
+-o /home/aleonti/bi624/ih_ouput/21_3G_both_R1_qdist.tsv
+
+python3 /home/aleonti/indexhopping/scripts/qdist.py \
+-f /home/aleonti/bi624/fastq_files/21_3G_both_S15_L008_R2_001.fastq \
+-n 101 \
+-o /home/aleonti/bi624/ih_ouput/21_3G_both_R2_qdist.tsv
+```
+
+
+Before I can plot the distributions, I need to read the data into R:
+```{r}
+control_R1 <- read.table("1_2A_control_R1_qdist.tsv", sep="\t", header = T)
+control_R2 <- read.table("1_2A_control_R2_qdist.tsv", sep="\t", header = T)
+
+both_R1 <- read.table("21_3G_both_R1_qdist.tsv", sep="\t", header = T)
+both_R2 <- read.table("21_3G_both_R2_qdist.tsv", sep="\t", header = T)
+```
+
+
+Then I can generate plots:
+```{r}
+#par(mfrow=c(2,2))
+
+plot(control_R1, main = "Quality Score Distribution For Each Position of\n Library 1_2A_control - Read 1",
+     xlab = "Basepair Position",
+     ylab = "Mean Quality Score",
+     ylim=c(0,40),
+     pch = 16,
+     col = "skyblue3")
+
+plot(control_R2, main = "Quality Score Distribution For Each Position of\n Library 1_2A_control - Read 2",
+     xlab = "Basepair Position",
+     ylab = "Mean Quality Score",
+     ylim=c(0,40),
+     pch = 16,
+     col = "skyblue1")
+
+plot(both_R1, main = "Quality Score Distribution For Each Position of\n Library 21_3G_both - Read 1",
+     xlab = "Basepair Position",
+     ylab = "Mean Quality Score",
+     ylim=c(0,40),
+     pch = 16,
+     col = "mediumaquamarine")
+
+plot(both_R2, main = "Quality Score Distribution For Each Position of\n Library 21_3G_both - Read 2",
+     xlab = "Basepair Position",
+     ylab = "Mean Quality Score",
+     ylim=c(0,40),
+     pch = 16,
+     col = "olivedrab")
+
+```
+
+The run times between these two methods (FastQC and the Q-Score distribution script I wrote) is very different, likely because I'm a beginner programmer and the programmers who wrote FastQC have much more experience writing scripts and programs. FastQC ran much faster than my qdist.py program that I wrote for the index hopping assignment in Bi622. When writing a program like this (that processes large amounts of data), it's very important to keep in mind how certain methods or functions will affect the run time of the script/program, and what objects or functions take more processing time than others. It's extremely likely that the code for FastQC is more streamlined and efficient than my code. It could also take adantage of features or increased processing speeds associated with other programming languages (I think FastQC is written in Java, unlike my code, which is written in Python.)
+
+
+## Adaptor Trimming for Part 2 ---------------------------------------------------------------
+
+### 3. Look into the adaptor trimming options for ```cutadapt```, ```process_shortreads```, and ```Trimmomatic``` (all on Talapas), and briefly describe the differences. Pick one of these to properly trim adapter sequences. Use default settings. 
+
+- **Cutadapt** finds and removes adapter sequences, primers, poly-A tails, and other types of unwanted sequences from high-throughput sequencing reads. It can also demultiplex reads without trimming them. It can take FASTA, FASTQ, or compressed files as input, and by default searches for adapters using error tolerance. Adapter sequences can contain an IUPAC wildcard character, like N (this is by default). Cutadapt can trim anchored reads using `...` and the `-g` option will indicate that the adapters are anchored at the start/ends of the read.
+
+- **Trimmomatic** is written in Java and can be run on single-end and paired-end data. It takes FASTQ files as input, and they can be gzipped (it'll detect the .gz extension and process accordingly, which is pretty cool). It can perform sliding window trimming and some basic quality filtering, if too many bases at the start/end of a read are low quality. Trimmomatic also requires a secondary fasta file with the adapter sequences in it. It seems to me like Trimmomatic has more options than Cutadapt, and some of the available options have more complex functions. 
+
+- **Process Shortreads** primarily is written for "cleaning of randomly sheared genomic or transcriptomic data", however it can be used for adapter trimming as well. It has a few adapter-specific options like `--adapter_mm`, allowing the user to indicate how many mismatches in the adapter sequence are allowed during adapter trimming. The user must specify whether or not the barcodes (and consquently, adapter sequences) are in-line with the target sequences - this is the default. Similar to Trimmomatic, Process Shortreads also requires a secondary file of barcode sequences. 
+  - Outputs "orphaned reads" when one read is trimmed and the other one isn't - the read that was *not* trimmed or discarded is not useful for analysis, so it's sent to the "orphaned reads" category
+
+For this assignment, I'd like to use Cutadapt. It has a very well-written and thorough user guide online, and the options and setup just make the most sense to me. I'm all for simmplicity when trying something new!
+
+
+## *Sanity check*: Use your Unix skills to search for the adapter sequences in your datasets and confirm the expected sequence orientations.
+
+To determine the adapter sequences, I went back to Assignment 4 from Bi623 and found the following information:
+
+```
+Forward adapter: AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC   
+Reverse adapter: AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+```
+
+I did a little bit of grepping to make sure that these sequences were present in my files:
+
+`grep "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC" 1_2A_control_S1_L008_R1_001.fastq`
+`grep "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT" 1_2A_control_S1_L008_R2_001.fastq`
+
+I got plenty of hits for both of those queries, so I went ahead and built my cutadapt slurm request using those sequences. Here's a copy of the slurm request script I used to run cutadapt:
+(excluding the slurm header lines)
+
+```{.r}
+ml easybuild
+ml icc/2017.1.132-GCC-6.3.0-2.27
+ml impi/2017.1.132
+ml cutadapt/1.14-Python-2.7.13
+
+############ Library 1_2A_control #############
+
+cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT \
+-o trimmed_1_2A_control_R1.fastq -p trimmed_1_2A_control_R2.fastq \
+/home/aleonti/bi624/fastq_files/1_2A_control_S1_L008_R1_001.fastq /home/aleonti/bi624/fastq_files/1_2A_control_S1_L008_R2_001.fastq
+
+############ Library 21_3G_both ##############
+
+cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT \
+-o trimmed_21_3G_both_R1.fastq -p trimmed_21_3G_both_R2.fastq \
+/home/aleonti/bi624/fastq_files/21_3G_both_S15_L008_R1_001.fastq /home/aleonti/bi624/fastq_files/21_3G_both_S15_L008_R2_001.fastq
+```
+
+After cutadapt finished, I looked in the .out file for information regarding how many reads were trimmed. 
+I pulled the following information from the breakdown for each cutadapt run:
+
+- 1_2A_control, R1: Trimmed `468831` times  
+- 1_2A_control, R2 Trimmed `537308` times  
+(total reads = 8,477,859)  
+
+- 21_3G_both, R1: Trimmed `613865` times  
+- 21_3G_both, R2: Trimmed `679275` times  
+(total reads = 9,237,299)  
+
+## What proportion of reads (both forward and reverse) was trimmed?
+
+Using the information above, I calculated the percentage of reads that were trimmed for each file:
+
+```{r}
+#1_2A_control, R1:
+print((468831/8477859)*100)
+
+# 1_2A_control, R2:
+print((537308/8477859)*100)
+
+# 21_3G_both, R1:
+print((613865/9237299)*100)
+
+# 21_3g_both, R2:
+print((679275/9237299)*100)
+```
+
+### 4. Plot the trimmed read length distributions for both forward and reverse reads (on the same plot). If necessary, consult Assignment 5 (Block 1) from Bi 623 to refresh your memory.
+
+To get the read lengths for each read in the trimmed files, I went back to Assignment 5, Block 1 from Bi623. I grabbed the code I wrote for that assignment and adapted it for my trimmed files for this assignment:
+
+```
+cat trimmed_1_2A_control_R1.fastq | grep -A 1 "^@" | grep -v "^--$" | grep -v "^@" | awk '{print  length($0)}' | sort -n | uniq -c | sort > trimmed_lengthdist_1_2A_control_R1.txt
+```
+
+I repeated this 3 more times for R2 of library 1_2A_control, and R1 and R2 of 21_3G_both. Then, I plotted the outputs:
+```{r Distribution_Plot}
+distrib_1_2A_R1 <- read.table('lengthdist_trimmed_1_2A_control_R1.txt')
+colnames(distrib_1_2A_R1) <- c("Count", "Basepair_Length")
+
+distrib_1_2A_R2 <- read.table('lengthdist_trimmed_1_2A_control_R2.txt')
+colnames(distrib_1_2A_R2) <- c("Count", "Basepair_Length")
+
+distrib_21_3G_R1 <- read.table('lengthdist_trimmed_21_3G_both_R1.txt')
+colnames(distrib_21_3G_R1) <- c("Count", "Basepair_Length")
+
+distrib_21_3G_R2 <- read.table('lengthdist_trimmed_21_3G_both_R2.txt')
+colnames(distrib_21_3G_R2) <- c("Count", "Basepair_Length")
+
+# plot for 1_2A_control trimmed read lengths
+plot(log10(distrib_1_2A_R1$Count)~distrib_1_2A_R1$Basepair_Length,
+     main = "Distribution of Read Lengths for Read 1 and Read 2",
+     xlab = "Length of Sequence (in Base Pairs)",
+     ylab = "Log10 of Freq of Length Occurances",
+     col = "forest green",
+     pch = 1)
+
+points(log10(distrib_1_2A_R2$Count)~distrib_1_2A_R2$Basepair_Length,
+     xlab = "Length of Sequence (in Base Pairs)",
+     ylab = "Log10 of Freq of Length Occurances",
+     col = "coral",
+     pch = 4)
+
+# plot for 21_3G_both trimmed read lengths
+plot(log10(distrib_21_3G_R1$Count)~distrib_21_3G_R1$Basepair_Length,
+     main = "Distribution of Read Lengths for Read 1 and Read 2",
+     xlab = "Length of Sequence (in Base Pairs)",
+     ylab = "Log10 of Freq of Length Occurances",
+     col = "navy",
+     pch = 1)
+
+points(log10(distrib_21_3G_R2$Count)~distrib_21_3G_R2$Basepair_Length,
+     xlab = "Length of Sequence (in Base Pairs)",
+     ylab = "Log10 of Freq of Length Occurances",
+     col = "salmon",
+     pch = 10)
+```
+
+
+### 5. Briefly describe whether the adaptor trimming results are consistent with the insert size distributions for your libraries. The size distribution information is in the Fragment Analyzer trace file on Github.
+
+I observed adapter trimming at fairly low percentages for each of my 4 files (ranging from 5.5% to 7.3%), which is consistent with the insert sizes indicated by the FragmentAnalyzer trace. The average insert size for all the libraries was around 400 bp, and our sequencing run was 101 base pairs. Because the insert size is so much larger than the actual sequencing window length, it's unlikely that the majority of the reads sequenced through the DNA molecules and into the adapter at the ends. Had the insert size been much smaller (less than 100 base pairs), there would likely be much more adapter contamination and much more trimming would be required. 
+
+
+
+## rRNA Reads and Strand-Specificity for Part 3 ---------------------------------
+
+### 6. Find publicly available mouse rRNA sequences and generate a gsnap database from them. Align the SF-Seq reads to your mouse rRNA database and report the proportion of reads that likely came from rRNAs.
+
+To find the rRNA sequences, I went to `http://rfam.xfam.org` and searched for "Mus Musculus", then narrowed that query down by checking the "rRNA" box on the left side of the screen. This produced a little over 300 hits, and I narrowed those entries down to 3 categories: 
+
+- entries containing 5S rRNA sequences
+- one entry containing the 5.8S rRNA sequence
+- entries containing 28S rRNA sequences (large subunit)
+- entries containing 18S rRNA sequences (small subunit)
+
+I downloaded all of the available sequences via FTP, then retained only 1 of each of the sequence files that corresponded to the subunits listed above. These files contained sequences for a variety of species, however, so I used `grep` to isolate only the appropriate sequences from Mus Musculus and saved these to their own fasta files. I used these smaller fasta files to build my gmap database. Once this was done, I aligned my 4 trimmed fastq files (using gsnap) to the rRNA database I created. 
+
+```{.r}
+ml easybuild
+module load intel/2017a GMAP-GSNAP
+
+######################## gmap build to create gsnap database #######################################
+
+# d flag indicates what you want your database directory to be named, D indicates the path to that directory,
+# and then, with NO flag at the end, you put the name of your fasta files
+
+# gmap_build -d gmap_db -D /home/aleonti/bi624/rRNA_files/gsnap_gmap/gmap_db /home/aleonti/bi624/rRNA_files/isolated_mouse_rRNA/* 
+
+
+######################## gsnap run to align trimmed fastq files to the rRNA ########################
+
+gsnap -N 1 -t 26 -A sam --split-output gsnap_1_2A_control --allow-pe-name-mismatch --no-sam-headers \
+-d gmap_db -D /home/aleonti/bi624/rRNA_files/gsnap_gmap/gmap_db/gmap_db \
+/home/aleonti/bi624/cutadapt_output/trimmed_1_2A_control_R1.fastq /home/aleonti/bi624/cutadapt_output/trimmed_1_2A_control_R2.fastq
+
+gsnap -N 1 -t 26 -A sam --split-output gsnap_21_3G_both --allow-pe-name-mismatch --no-sam-headers \
+-d gmap_db -D /home/aleonti/bi624/rRNA_files/gsnap_gmap/gmap_db/gmap_db \
+/home/aleonti/bi624/cutadapt_output/trimmed_21_3G_both_R1.fastq /home/aleonti/bi624/cutadapt_output/trimmed_21_3G_both_R2.fastq
+```
+
+My gsnap run produced quite a few files, because I used the `--split-output` flag. However, I'm only interested in the "nomapping" reads for each library. Those represent the reads that *did not* map to the rRNA sequences. The following proportions of the libraries did not map to rRNA:
+
+- 1_2A_control: `16831853` non-mapping reads
+- 21_3G_both: `17071860` non-mapping reads
+
+```{r}
+# percentage of non-mapping reads for 1_2A_control = 
+16831973/(8477859*2)
+
+# percent of reads mapping to rRNA =
+(1-0.9926948)*100
+
+# percentage of non-mapping reads for 21_3G_control = 
+17071860/(9237299*2)
+
+# percent of reads mapping to rRNA =
+(1-0.9240721)*100
+```  
+
+### 7. Demonstrate convincingly that the SF-Seq data are from “strand-specific” RNA-Seq libraries. There are a number of possible strategies to address this problem, but you need only implement one. Report your evidence in numeric and graphical (e.g. a plot) forms.
+
+To demonstate the strandednesss of my data, I looked back at Assignment 4 from Bi622. In that assignment, we looked for 15-base repeats of A and T nucleotides and used that to predict strandedness. I used the same Unix commands to get a count of reads containing poly-A and poly-T sequences in my files:
+
+**1_2A_control: **
+
+`grep "AAAAAAAAAAAAAAA" 1_2A_control_S1_L008_R1_001.fastq | wc -l` = `7172` reads with poly-A regions
+`grep "TTTTTTTTTTTTTTT" 1_2A_control_S1_L008_R1_001.fastq | wc -l` = `38292` reads with poly-T regions*
+
+`grep "AAAAAAAAAAAAAAA" 1_2A_control_S1_L008_R2_001.fastq | wc -l` = `22014` reads with poly-A regions
+`grep "TTTTTTTTTTTTTTT" 1_2A_control_S1_L008_R2_001.fastq | wc -l` = `23848` reads with poly-T regions*
+
+**21_3G_both: **
+
+`grep "AAAAAAAAAAAAAAA" 21_3G_both_S15_L008_R1_001.fastq | wc -l` = `24207` reads with poly-A regions
+`grep "TTTTTTTTTTTTTTT" 21_3G_both_S15_L008_R1_001.fastq | wc -l` = `49484` reads with poly-T regions*
+
+`grep "AAAAAAAAAAAAAAA" 21_3G_both_S15_L008_R2_001.fastq | wc -l` = `41564` reads with poly-A regions*
+`grep "TTTTTTTTTTTTTTT" 21_3G_both_S15_L008_R2_001.fastq | wc -l` = `30813` reads with poly-T regions
+
+
+To show this data visually with bar plots:
+```{r}
+stranded_R1_1_2A_control <- c(7172, 38292)
+stranded_R2_1_2A_control <- c(22014, 23848)
+
+stranded_R1_21_3G_both <- c(24207, 49484)
+stranded_R2_21_3G_both <- c(41564, 30813)
+
+strandedness <- data.frame(stranded_R1_1_2A_control, stranded_R2_1_2A_control, stranded_R1_21_3G_both, stranded_R2_21_3G_both, row.names = c("poly-As count", "poly-Ts count"))
+colnames(strandedness) <- c("R1_1_2A_control", "R2_1_2A_control", "R1_21_3G_both", "R2_21_3G_both")
+
+barplot(strandedness$R1_1_2A_control, names.arg = c("poly-As", "poly-Ts"), col = "skyblue1", border = "navy blue", ylab = "# of Reads w/ Repeat Sequences", main = "Occurances of 15-nucleotide Poly-A and \n Poly-T Repeats in Library 1_2A_Control Read 1")
+
+barplot(strandedness$R2_1_2A_control, names.arg = c("poly-As", "poly-Ts"), col = "aquamarine2", border = "aquamarine4", ylab = "# of Reads w/ Repeat Sequences", main = "Occurances of 15-nucleotide Poly-A and \n Poly-T Repeats in Library 1_2A_Control Read 2")
+
+barplot(strandedness$R1_21_3G_both, names.arg = c("poly-As", "poly-Ts"), col = "coral2", border = "coral4", ylab = "# of Reads w/ Repeat Sequences", main = "Occurances of 15-nucleotide Poly-A and \n Poly-T Repeats in Library 21_3G_both Read 1")
+
+barplot(strandedness$R2_21_3G_both, names.arg = c("poly-As", "poly-Ts"), col = "plum", border = "purple", ylab = "# of Reads w/ Repeat Sequences", main = "Occurances of 15-nucleotide Poly-A and \n Poly-T Repeats in Library 21_3G_both Read 2")
+
+```
+
+These bar plots illustrate that our data is, in fact, stranded. With stranded RNA-Seq data (that underwent a poly-A enrichment prior to library prep, like ours did), you would expect to see one read that contains more poly-A regions and one that contains more poly-Ts. This happens because our poly-A enrichment results in our original sample containing mostly (if not almost all) RNA molecules with a poly-A tail. These are carried through library prep and into sequencing. During sequencing, when the complementary strand to our target cDNA molecule is being synthesized, these poly-As occur as poly-Ts in the complementary strand. For the next read, this will be reversed (complementary poly-As are generated from the poly-Ts). Because of this, one read should contain more poly-As, and the other should contain more poly-Ts. This pattern is seen clearly in my bar plots for 1_2A_control. It isn't as obvious for library 21_3G_both, but there are much fewer poly-As in Read 1 than Read 2, even if the poly-T count remains high. 
