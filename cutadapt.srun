@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH --partition=gpu                               
+#SBATCH --job-name=cutadapt	                  
+#SBATCH --output=out.ca              
+#SBATCH --error=err.ca                 
+#SBATCH --time=24:00:00                           
+#SBATCH --nodes=1                                       
+#SBATCH --ntasks-per-node=28                   
+
+ml easybuild
+ml icc/2017.1.132-GCC-6.3.0-2.27
+ml impi/2017.1.132
+ml cutadapt/1.14-Python-2.7.13
+
+############ Library 1_2A_control #############
+
+cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT \
+-o trimmed_1_2A_control_R1.fastq -p trimmed_1_2A_control_R2.fastq \
+/home/aleonti/bi624/fastq_files/1_2A_control_S1_L008_R1_001.fastq /home/aleonti/bi624/fastq_files/1_2A_control_S1_L008_R2_001.fastq
+
+############ Library 21_3G_both ##############
+
+cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT \
+-o trimmed_21_3G_both_R1.fastq -p trimmed_21_3G_both_R2.fastq \
+/home/aleonti/bi624/fastq_files/21_3G_both_S15_L008_R1_001.fastq /home/aleonti/bi624/fastq_files/21_3G_both_S15_L008_R2_001.fastq
